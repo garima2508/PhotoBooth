@@ -21,9 +21,13 @@ document.getElementById('coin-btn').onclick = () => {
 
 async function startWebcam() {
     try {
-        stream = await navigator.mediaDevices.getUserMedia({ video: true });
+        const constraints = {
+            video: { facingMode: "user" },
+            audio: false
+        };
+        stream = await navigator.mediaDevices.getUserMedia(constraints);
         video.srcObject = stream;
-    } catch (err) { alert("Camera not accessible!"); }
+    } catch (err) { alert("Camera not accessible! Please check permissions."); }
 }
 
 // 2. FILTERS
@@ -35,7 +39,7 @@ document.querySelectorAll('.filter-item').forEach(item => {
     };
 });
 
-// 3. STICKERS
+// 3. STICKERS (Updated for Touch)
 function addSticker(emoji) {
     const wrapper = document.createElement('div');
     wrapper.className = 'sticker-wrapper';
@@ -44,30 +48,69 @@ function addSticker(emoji) {
     overlay.appendChild(wrapper);
 
     let rotation = 0; let size = 50;
-    wrapper.onmousedown = (e) => {
-        if (e.target.classList.contains('handle')) return;
-        let sx = e.clientX - wrapper.offsetLeft, sy = e.clientY - wrapper.offsetTop;
-        document.onmousemove = (ev) => { wrapper.style.left = ev.clientX - sx + 'px'; wrapper.style.top = ev.clientY - sy + 'px'; };
-        document.onmouseup = () => document.onmousemove = null;
+
+    const getPointerPos = (e) => {
+        const event = e.touches ? e.touches[0] : e;
+        return { x: event.clientX, y: event.clientY };
     };
-    wrapper.querySelector('.rotate-handle').onmousedown = (e) => {
-        e.stopPropagation();
-        document.onmousemove = (ev) => {
+
+    const startDrag = (e) => {
+        if (e.target.classList.contains('handle')) return;
+        const pos = getPointerPos(e);
+        let sx = pos.x - wrapper.offsetLeft, sy = pos.y - wrapper.offsetTop;
+
+        const move = (ev) => {
+            const now = getPointerPos(ev);
+            wrapper.style.left = now.x - sx + 'px';
+            wrapper.style.top = now.y - sy + 'px';
+        };
+        const stop = () => {
+            document.removeEventListener('mousemove', move);
+            document.removeEventListener('touchmove', move);
+        };
+        document.addEventListener('mousemove', move);
+        document.addEventListener('touchmove', move, { passive: false });
+        document.addEventListener('mouseup', stop, { once: true });
+        document.addEventListener('touchend', stop, { once: true });
+    };
+
+    wrapper.addEventListener('mousedown', startDrag);
+    wrapper.addEventListener('touchstart', startDrag, { passive: false });
+
+    // Rotate Logic
+    wrapper.querySelector('.rotate-handle').addEventListener('touchstart', (e) => rotateHandler(e), { passive: false });
+    wrapper.querySelector('.rotate-handle').onmousedown = (e) => rotateHandler(e);
+
+    function rotateHandler(e) {
+        e.stopPropagation(); e.preventDefault();
+        const rotate = (ev) => {
+            const p = getPointerPos(ev);
             const r = wrapper.getBoundingClientRect();
-            rotation = Math.atan2(ev.clientY - (r.top + r.height/2), ev.clientX - (r.left + r.width/2)) * 180 / Math.PI + 90;
+            rotation = Math.atan2(p.y - (r.top + r.height/2), p.x - (r.left + r.width/2)) * 180 / Math.PI + 90;
             wrapper.style.transform = `rotate(${rotation}deg)`;
         };
-        document.onmouseup = () => document.onmousemove = null;
-    };
-    wrapper.querySelector('.resize-handle').onmousedown = (e) => {
-        e.stopPropagation();
-        let startX = e.clientX, startSize = size;
-        document.onmousemove = (ev) => {
-            size = Math.max(20, startSize + (ev.clientX - startX));
+        document.addEventListener('mousemove', rotate);
+        document.addEventListener('touchmove', rotate, { passive: false });
+        document.addEventListener('mouseup', () => { document.removeEventListener('mousemove', rotate); }, { once: true });
+        document.addEventListener('touchend', () => { document.removeEventListener('touchmove', rotate); }, { once: true });
+    }
+
+    // Resize Logic
+    wrapper.querySelector('.resize-handle').addEventListener('touchstart', (e) => resizeHandler(e), { passive: false });
+    wrapper.querySelector('.resize-handle').onmousedown = (e) => resizeHandler(e);
+
+    function resizeHandler(e) {
+        e.stopPropagation(); e.preventDefault();
+        let startX = getPointerPos(e).x, startSize = size;
+        const resize = (ev) => {
+            size = Math.max(20, startSize + (getPointerPos(ev).x - startX));
             wrapper.querySelector('span').style.fontSize = size + 'px';
         };
-        document.onmouseup = () => document.onmousemove = null;
-    };
+        document.addEventListener('mousemove', resize);
+        document.addEventListener('touchmove', resize, { passive: false });
+        document.addEventListener('mouseup', () => { document.removeEventListener('mousemove', resize); }, { once: true });
+        document.addEventListener('touchend', () => { document.removeEventListener('touchmove', resize); }, { once: true });
+    }
 }
 
 // 4. PHOTO SESSION
@@ -81,10 +124,7 @@ document.getElementById('start-btn').onclick = async () => {
         triggerFlash();
     }
 
-    // Stop Webcam
     if (stream) stream.getTracks().forEach(t => t.stop());
-    
-    // Display Result
     drawFinalStrip();
     captureUI.classList.add('hidden');
     resultArea.classList.remove('hidden');
@@ -114,11 +154,9 @@ function captureImage() {
     const tmp = document.createElement('canvas');
     tmp.width = video.videoWidth; tmp.height = video.videoHeight;
     const tctx = tmp.getContext('2d');
-    
     tctx.filter = video.style.filter;
     tctx.drawImage(video, 0, 0);
 
-    // Draw Stickers on capture
     document.querySelectorAll('.sticker-wrapper').forEach(s => {
         const r = s.getBoundingClientRect(), b = boothBox.getBoundingClientRect();
         const x = (r.left - b.left + r.width/2) * (tmp.width/b.width);
@@ -143,22 +181,18 @@ function captureImage() {
 function drawFinalStrip() {
     const w = 400, h = 300, p = 30;
     canvas.width = w + p*2;
-    canvas.height = (h * 4) + (p * 5); // Spacing for 4 photos + margins
-    
+    canvas.height = (h * 4) + (p * 5);
     ctx.fillStyle = "white";
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-
     capturedFrames.forEach((frame, i) => {
         ctx.drawImage(frame, p, p + i * (h + p), w, h);
     });
 }
 
-// 5. BUTTONS
 document.getElementById('retake-btn').onclick = () => location.reload();
-
 document.getElementById('download-btn').onclick = () => {
     const link = document.createElement('a');
-    link.download = `my_booth_strip_${Date.now()}.png`;
+    link.download = `my_strip_${Date.now()}.png`;
     link.href = canvas.toDataURL('image/png');
     link.click();
 };
