@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sky High Photo Booth</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="sky-background">
+        <div class="cloud cloud1"></div>
+        <div class="cloud cloud2"></div>
+        <div class="cloud cloud3"></div>
+    </div>
+
+    <div id="entry-screen">
+        <div class="curtain left"></div>
+        <div class="curtain right"></div>
+        <div class="coin-container" id="coin-btn">
+            <div class="coin">🪙</div>
+            <h2 class="shadow-text">CLICK COIN TO START</h2>
+        </div>
+    </div>
+
+    <div class="container">
+        <div id="capture-ui" class="main-layout">
+            <div class="sidebar card">
+                <h3>FILTERS</h3>
+                <div class="filter-grid" id="filter-options">
+                    <div class="filter-item active" data-filter="none">
+                        <div class="filter-preview none"></div>
+                        <span>Normal</span>
+                    </div>
+                    <div class="filter-item" data-filter="grayscale(100%) contrast(120%)">
+                        <div class="filter-preview bw"></div>
+                        <span>B&W</span>
+                    </div>
+                    <div class="filter-item" data-filter="sepia(80%) contrast(110%)">
+                        <div class="filter-preview vintage"></div>
+                        <span>Vintage</span>
+                    </div>
+                    <div class="filter-item" data-filter="saturate(200%) brightness(110%)">
+                        <div class="filter-preview vibrant"></div>
+                        <span>Vibrant</span>
+                    </div>
+                </div>
+
+                <h3>STICKERS</h3>
+                <div class="sticker-menu">
+                    <button onclick="addSticker('❤️')">❤️</button>
+                    <button onclick="addSticker('⭐')">⭐</button>
+                    <button onclick="addSticker('🕶️')">🕶️</button>
+                    <button onclick="addSticker('🎀')">🎀</button>
+                </div>
+            </div>
+
+            <div class="booth-column">
+                <div class="booth-box card" id="booth-box">
+                    <video id="webcam" autoplay playsinline></video>
+                    <div id="sticker-overlay"></div>
+                    <div id="countdown" class="hidden">3</div>
+                    <div id="flash" class="hidden"></div>
+                </div>
+                <button id="start-btn">START SESSION</button>
+            </div>
+        </div>
+
+        <div id="result-area" class="hidden">
+            <div class="result-card">
+                <canvas id="strip-canvas"></canvas>
+                <div class="actions">
+                    <button id="download-btn" class="save-btn">SAVE STRIP</button>
+                    <button id="retake-btn" class="retake-btn">RETAKE</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
