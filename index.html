@@ -24,35 +24,39 @@
     </div>
 
     <div class="container">
-        <div id="capture-ui" class="main-layout">
+        <div id="capture-ui" class="main-layout hidden">
             <div class="sidebar card">
-                <h3>FILTERS</h3>
-                <div class="filter-grid" id="filter-options">
-                    <div class="filter-item active" data-filter="none">
-                        <div class="filter-preview none"></div>
-                        <span>Normal</span>
+                <section>
+                    <h3>FILTERS</h3>
+                    <div class="filter-grid" id="filter-options">
+                        <div class="filter-item active" data-filter="none">
+                            <div class="filter-preview none"></div>
+                            <span>Normal</span>
+                        </div>
+                        <div class="filter-item" data-filter="grayscale(100%) contrast(120%)">
+                            <div class="filter-preview bw"></div>
+                            <span>B&W</span>
+                        </div>
+                        <div class="filter-item" data-filter="sepia(80%) contrast(110%)">
+                            <div class="filter-preview vintage"></div>
+                            <span>Vintage</span>
+                        </div>
+                        <div class="filter-item" data-filter="saturate(200%) brightness(110%)">
+                            <div class="filter-preview vibrant"></div>
+                            <span>Vibrant</span>
+                        </div>
                     </div>
-                    <div class="filter-item" data-filter="grayscale(100%) contrast(120%)">
-                        <div class="filter-preview bw"></div>
-                        <span>B&W</span>
-                    </div>
-                    <div class="filter-item" data-filter="sepia(80%) contrast(110%)">
-                        <div class="filter-preview vintage"></div>
-                        <span>Vintage</span>
-                    </div>
-                    <div class="filter-item" data-filter="saturate(200%) brightness(110%)">
-                        <div class="filter-preview vibrant"></div>
-                        <span>Vibrant</span>
-                    </div>
-                </div>
+                </section>
 
-                <h3>STICKERS</h3>
-                <div class="sticker-menu">
-                    <button onclick="addSticker('❤️')">❤️</button>
-                    <button onclick="addSticker('⭐')">⭐</button>
-                    <button onclick="addSticker('🕶️')">🕶️</button>
-                    <button onclick="addSticker('🎀')">🎀</button>
-                </div>
+                <section>
+                    <h3>STICKERS</h3>
+                    <div class="sticker-menu">
+                        <button onclick="addSticker('❤️')">❤️</button>
+                        <button onclick="addSticker('⭐')">⭐</button>
+                        <button onclick="addSticker('🕶️')">🕶️</button>
+                        <button onclick="addSticker('🎀')">🎀</button>
+                    </div>
+                </section>
             </div>
 
             <div class="booth-column">
@@ -68,7 +72,9 @@
 
         <div id="result-area" class="hidden">
             <div class="result-card">
-                <canvas id="strip-canvas"></canvas>
+                <div class="canvas-wrapper">
+                    <canvas id="strip-canvas"></canvas>
+                </div>
                 <div class="actions">
                     <button id="download-btn" class="save-btn">SAVE STRIP</button>
                     <button id="retake-btn" class="retake-btn">RETAKE</button>
